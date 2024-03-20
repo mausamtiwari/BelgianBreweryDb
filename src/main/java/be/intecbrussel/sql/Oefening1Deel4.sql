@@ -7,7 +7,7 @@ FROM Brewers
 WHERE Brewers.Turnover > (SELECT AVG(Turnover) AS AverageTurnover FROM Brewers);
 
 
-# Toon alle bieren die het minimum of maximum alcohol gehalte hebben. (33)Select
+# Toon alle bieren die het minimum of maximum alcohol gehalte hebben. (33)
 
 SELECT Beers.Name AS BeerName
 FROM Beers
@@ -28,9 +28,38 @@ WHERE Beers.Alcohol > (SELECT AVG(Alcohol) AS AverageAlcohol FROM Beers)
 
 
 # (d) Doordenker zonder search: toon een lijst van alle brouwers met de prijs en naam van hun duurste bier.
-#     Het is mogelijkdat er meerdere bieren per brouwer geselecteerd worden. (266)
+#     Het is mogelijkdat er meerdere bieren per brouwer geselecteerd worden. (113)
 
-SELECT Brewers.Name AS BrewerName, Beers.Name AS BeerName, Beers.Price AS BeerPrice
-FROM Beers
-         INNER JOIN Brewers ON Brewers.Id = Beers.id
-    AND Beers.Price = (SELECT MAX(Price) FROM Beers WHERE Beers.Id = Brewers.Id);
+SELECT brewers.Name AS BrewerName, MAX(Price) AS MaxPrice, GROUP_CONCAT(beers.Name) AS Expensivebeers
+FROM brewers
+         JOIN beers ON brewers.Id = beers.BrewerId
+         JOIN (SELECT MAX(Price) AS max_price, BrewerId FROM beers GROUP BY BrewerId) AS ExpensiveBeers
+              ON beers.BrewerId = ExpensiveBeers.BrewerId AND beers.Price = ExpensiveBeers.max_price
+GROUP BY brewers.Name;
+
+
+
+# (d) Doordenker zonder search: toon een lijst van alle brouwers met de prijs en MaxPrice. En alle
+#    alle bieren geproduceerd.
+SELECT Brewers.Name                                       AS BrewerName,
+       MAX(Beers.Price)                                   AS MaxPrice,
+       GROUP_CONCAT(Beers.Name ORDER BY Beers.Price DESC) AS ExpensiveBeers
+FROM Brewers
+         LEFT JOIN Beers ON Brewers.Id = Beers.BrewerId
+GROUP BY Brewers.Id;
+
+
+# Doordenker zonder search: toon een lijst van alle brouwers met de prijs en naam van hun duurste bier.
+# Het is mogelijkdat er meerdere bieren per brouwer geselecteerd worden. (266)
+
+SELECT beers.Name, beers.Price, brewers.Name
+FROM brewers
+         JOIN beers ON brewers.Id = beers.BrewerId
+         JOIN (SELECT MAX(Price) AS max_prices, BrewerId FROM beers GROUP BY BrewerId) AS HIGHTPrices
+              ON beers.BrewerId = HIGHTPrices.BrewerId AND beers.Price = HIGHTPrices.max_prices;
+
+;
+
+
+
+
