@@ -37,6 +37,14 @@ FROM brewers
               ON beers.BrewerId = ExpensiveBeers.BrewerId AND beers.Price = ExpensiveBeers.max_price
 GROUP BY brewers.Name;
 
+## OR
+
+SELECT Brewers.Name AS BrewerName, MAX(Beers.Price) AS MaxPrice, GROUP_CONCAT(Beers.Name) AS ExpensiveBeers
+FROM Brewers
+         JOIN Beers ON Brewers.Id = Beers.BrewerId
+WHERE Beers.Price = (SELECT MAX(Price) FROM Beers WHERE Beers.BrewerId = Brewers.Id)
+GROUP BY Brewers.Name;
+
 
 
 # (d) Doordenker zonder search: toon een lijst van alle brouwers met de prijs en MaxPrice. En alle
@@ -57,9 +65,3 @@ FROM brewers
          JOIN beers ON brewers.Id = beers.BrewerId
          JOIN (SELECT MAX(Price) AS max_prices, BrewerId FROM beers GROUP BY BrewerId) AS HIGHTPrices
               ON beers.BrewerId = HIGHTPrices.BrewerId AND beers.Price = HIGHTPrices.max_prices;
-
-;
-
-
-
-
